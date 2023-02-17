@@ -4,7 +4,7 @@
 )]
 
 mod playback;
-use playback::add_to_queue;
+
 use playback::init_handle;
 use playback::init_sink;
 use playback::PlayState;
@@ -28,8 +28,9 @@ fn main() {
         .manage(PlayState{sink, stream_handle})
         .invoke_handler(tauri::generate_handler![
             playback::play_sound, 
-            playback::add_to_queue, 
             playback::pause_sound,
+            playback::stop_sound,
+            playback::add_to_queue, 
             filepicker::open_file_dialog,
             ])
         .run(tauri::generate_context!())

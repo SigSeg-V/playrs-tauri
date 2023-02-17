@@ -1,8 +1,8 @@
-use std::{fs::File, thread::sleep};
+
 use std::io::BufReader;
-use std::time::Duration;
+
 use rodio::OutputStreamHandle;
-use rodio::{Decoder, OutputStream, Sink, source::{Source, SineWave}};
+use rodio::{OutputStream, Sink};
 
 pub struct PlayState {
     pub sink: Sink,
@@ -47,4 +47,16 @@ pub fn play_sound(state: tauri::State<PlayState>) {
 #[tauri::command]
 pub fn pause_sound(state: tauri::State<PlayState>) {
     state.sink.pause();
+}
+
+#[tauri::command]
+pub fn stop_sound(state: tauri::State<PlayState>) {
+   state.sink.stop(); 
+}
+
+#[tauri::command]
+pub fn get_sound_runtime(state: tauri::State<PlayState>) {
+  
+  todo!()
+
 }

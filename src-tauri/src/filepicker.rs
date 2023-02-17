@@ -1,7 +1,7 @@
-use std::{path::PathBuf, io::BufReader, fs::{File, self}};
+use std::{path::PathBuf};
 
 use tauri::{api::dialog::FileDialogBuilder, Window};
-use crate::playback::PlayState;
+
 
 #[derive(Clone, serde::Serialize)]
 pub struct Payload {

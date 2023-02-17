@@ -1,7 +1,6 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/tauri"
-  import { open } from "@tauri-apps/api/dialog";
-  import { audioDir } from "@tauri-apps/api/path";
+  import { emit, listen } from '@tauri-apps/api/event'
 
   // Sends event to rodio to play current queue
   async function playSound() {
@@ -11,6 +10,11 @@
   // Sends event to rodio to pause current queue
   async function pauseSound() {
     await invoke("pause_sound")
+  }
+
+  // Sends event to rodio to pause current queue
+  async function stopSound() {
+    await invoke("stop_sound")
   }
 
   // Adds sound to rodio queue
@@ -26,7 +30,6 @@
     await invoke("open_file_dialog")
   }
 
-  import { emit, listen } from '@tauri-apps/api/event'
   
   type FilePayload = {files: string[] };
 
@@ -51,12 +54,15 @@
     <button on:click={playSound}>
       Play
     </button>
+
     <button on:click={pauseSound}>
       Pause
     </button>
-    <!-- <button on:click={addToQueue}>
-      Add To Queue
-    </button> -->
+
+    <button on:click={stopSound}>
+      Stop
+    </button>
+
     <button on:click={openFolder}>
       Open Import Dialog
     </button>
