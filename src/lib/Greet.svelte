@@ -1,22 +1,48 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/tauri"
+  import { open } from "@tauri-apps/api/dialog";
+  import { audioDir } from "@tauri-apps/api/path";
 
-  let name = "";
-  let greetMsg = ""
-
+  // Sends event to rodio to play current queue
   async function playSound() {
-    // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
     await invoke("play_sound")
   }
   
+  // Sends event to rodio to pause current queue
   async function pauseSound() {
-    // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
     await invoke("pause_sound")
   }
 
-  async function addToQueue() {
-    await invoke("add_to_queue")
+  // Adds sound to rodio queue
+  async function addToQueue(files?: Array<string>) {
+    if (files !== null) {
+      await invoke("add_to_queue", {files: files})
+    }
   }
+
+  let openDialog = false;
+
+  async function openFolder() {
+    await invoke("open_file_dialog")
+  }
+
+  import { emit, listen } from '@tauri-apps/api/event'
+  
+  type FilePayload = {files: string[] };
+
+  (async () => {
+    await listen<FilePayload>('open-files', (event) => {
+      console.log(event.payload);
+      addToQueue(event.payload.files);
+  })
+})();
+  
+
+
+  // emits the `click` event with the object payload
+  emit('click', {
+    theMessage: 'Tauri is awesome!',
+  })
 
 </script>
 
@@ -28,8 +54,22 @@
     <button on:click={pauseSound}>
       Pause
     </button>
-    <button on:click={addToQueue}>
+    <!-- <button on:click={addToQueue}>
       Add To Queue
+    </button> -->
+    <button on:click={openFolder}>
+      Open Import Dialog
     </button>
+
+    {#if openDialog}
+      <p>
+        openDialog
+      </p>
+    {/if}
+    {#if !openDialog}
+    <p>
+      closeDialog
+    </p>
+    {/if}
   </div>
 </div>

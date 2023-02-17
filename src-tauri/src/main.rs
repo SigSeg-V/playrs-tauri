@@ -4,11 +4,14 @@
 )]
 
 mod playback;
+use playback::add_to_queue;
 use playback::init_handle;
 use playback::init_sink;
 use playback::PlayState;
 
 mod filepicker;
+
+use tauri::Manager;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
@@ -22,8 +25,13 @@ fn main() {
     let sink = init_sink(&stream_handle);
 
     tauri::Builder::default()
-    .manage(PlayState{sink, stream_handle})
-        .invoke_handler(tauri::generate_handler![playback::play_sound, playback::add_to_queue, playback::pause_sound])
+        .manage(PlayState{sink, stream_handle})
+        .invoke_handler(tauri::generate_handler![
+            playback::play_sound, 
+            playback::add_to_queue, 
+            playback::pause_sound,
+            filepicker::open_file_dialog,
+            ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

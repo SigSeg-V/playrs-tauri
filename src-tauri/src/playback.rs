@@ -18,9 +18,25 @@ pub fn init_sink(stream_handle: &OutputStreamHandle) -> Sink {
 }
 
 #[tauri::command]
-pub fn add_to_queue(state: tauri::State<PlayState>) {
-    let file = std::fs::File::open("/Users/charlie/Documents/Rust/playrs/src-tauri/assets/music.mp3").unwrap();
-    state.sink.append(rodio::Decoder::new(BufReader::new(file)).unwrap()); 
+pub fn add_to_queue(state: tauri::State<PlayState>, files: Vec<String>) -> i32 {
+
+    let mut num_files: i32 = 0;
+
+    // default music file for testing
+    if files.is_empty() {
+        let file = std::fs::File::open("/Users/charlie/Documents/Rust/playrs/src-tauri/assets/Scarlet Fire.mp3").unwrap();
+        state.sink.append(rodio::Decoder::new(BufReader::new(file)).unwrap()); 
+        num_files = 1;
+    }
+    // coming from the file browser
+    else {
+        num_files = files.len() as i32;
+        for file_path in files {
+            let file = std::fs::File::open(file_path).unwrap();
+            state.sink.append(rodio::Decoder::new(BufReader::new(file)).unwrap());  
+        }
+    }
+    num_files
 }
 
 #[tauri::command]

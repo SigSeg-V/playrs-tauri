@@ -1,32 +1,31 @@
-use std::{path::PathBuf, io::BufReader, fs::File};
+use std::{path::PathBuf, io::BufReader, fs::{File, self}};
 
-use tauri::api::dialog::FileDialogBuilder;
+use tauri::{api::dialog::FileDialogBuilder, Window};
 use crate::playback::PlayState;
 
+#[derive(Clone, serde::Serialize)]
+pub struct Payload {
+    files: Vec<PathBuf>
+}
+
 #[tauri::command]
-pub fn get_file_path(state: tauri::State<PlayState>) {
+pub fn open_file_dialog(window: Window) {
+    
+    FileDialogBuilder::default()
+          //.add_filter("Markdown", &["md"])
+          .pick_files(move |path_buf| {
 
-    let mut files: Vec<PathBuf> = vec![];
-    let builder = FileDialogBuilder::new();
-    let files = builder
-    .pick_files(move |paths| {
-        
-        // don't need to add anything if the user closes dialog box without selection
-        if paths.is_none() {
-            return;
-        }
+            let mut files: Vec<PathBuf> = vec![];
 
-        for path in paths.unwrap() {
-            
-           files.push(path);
-        }
-    });
-        
-    // // now we got the pathbufs, we can add them to state
-    // for file_path in files {
-    //     let file = File::open(file_path).expect("Error in opening files");
-    //     state.sink.append(rodio::Decoder::new(BufReader::new(file)).unwrap());
-    // }
+            match path_buf {
+            Some(p) => { 
+                files = p;
+             }
+            _ => {  }
+          };
 
-    todo!()
+          window.emit("open-files", Payload{files})
+            .expect("Error opening files");
+
+        });
 }
