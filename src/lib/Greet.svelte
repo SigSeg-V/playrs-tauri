@@ -18,7 +18,7 @@
   }
 
   // Adds sound to rodio queue
-  async function addToQueue(files?: Array<string>) {
+  async function addToQueue(files: Array<string>) {
     if (files !== null) {
       await invoke("add_to_queue", {files: files})
     }
@@ -27,28 +27,32 @@
     }
   }
 
-  let openDialog = false;
-
-  async function openFolder() {
-    await invoke("open_file_dialog", false)
+  async function openFiles() {
+    await invoke("open_file_dialog")
   }
 
+  async function openFolders() {
+    await invoke("open_folder_dialog")
+  }
   
-  type FilePayload = { files: string[] };
+  type FilePayload = { paths: string[] };
+
+  // playlist as a string array do display to the gui
+  $: playList = [];
+
+  // gets the new playlist from the backend on update
+  listen<Array<string>>("update-playlist", (event) => {
+    playList = event.payload;
+    console.log(event.payload)
+  }).catch();
 
   (async () => {
     await listen<FilePayload>('open-files', (event) => {
       console.log(event.payload);
-      addToQueue(event.payload.files);
+      addToQueue(event.payload.paths);
   })
 })();
-  
 
-
-  // emits the `click` event with the object payload
-  emit('click', {
-    theMessage: 'Tauri is awesome!',
-  })
 
 </script>
 
@@ -66,19 +70,16 @@
       Stop
     </button>
 
-    <button on:click={openFolder}>
-      Open Import Dialog
+    <button on:click={openFiles}>
+      Open File Dialog
     </button>
 
-    {#if openDialog}
-      <p>
-        openDialog
-      </p>
-    {/if}
-    {#if !openDialog}
-    <p>
-      closeDialog
-    </p>
-    {/if}
+    <button on:click={openFolders}>
+      Open Folder Dialog
+    </button>
+
   </div>
+  {#each playList as rec}
+  <li> {rec} </li>
+  {/each}
 </div>

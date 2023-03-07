@@ -1,12 +1,8 @@
-
-use std::io::BufReader;
 use std::sync::Mutex;
 
-use gstreamer as gst;
 use gstreamer_player as gst_player;
-use gst::prelude::*;
-
-use gst_player::{PlayerGMainContextSignalDispatcher, Player, PlayerSignalDispatcher, PlayerVideoRenderer};
+use gst_player::{Player};
+use tauri::Window;
 
 pub struct PlayState {
     pub sink: Mutex<Sink>,
@@ -18,7 +14,7 @@ pub struct Sink {
 }
 
 #[tauri::command]
-pub fn add_to_queue(state: tauri::State<PlayState>, files: Vec<String>) {
+pub fn add_to_queue(window: Window, state: tauri::State<PlayState>, files: Vec<String>) {
 
     let mut sink = state.sink.lock().unwrap();
 
@@ -39,6 +35,9 @@ pub fn add_to_queue(state: tauri::State<PlayState>, files: Vec<String>) {
             sink.playlist.push("file://".to_string() + &file);
         }
     }
+    // emit the changes to the playlist to the ui
+    window.emit("update-playlist", sink.playlist.clone())
+        .expect("Error updating playlist");
 }
 
 #[tauri::command]

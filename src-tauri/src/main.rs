@@ -4,12 +4,10 @@
 )]
 
 use gst::glib;
-use gst::glib::translate::FromGlibPtrFull;
 use gstreamer as gst;
 use gstreamer_player as gst_player;
 
 use gstreamer::prelude::*;
-use gstreamer_player::prelude::*;
 
 mod filepicker;
 mod playback;
@@ -33,16 +31,23 @@ fn main() -> Result<(), glib::Error> {
                 PlayState{
                     sink: Mutex::new(
                             Sink{player,
-                                 playlist: vec!["file:///Users/charlie/Documents/Rust/playrs/src-tauri/assets/Scarlet Fire.mp3".to_string()],
+                                 playlist: vec![],
                                  current_file: 0
                             })
                 })
         .invoke_handler(tauri::generate_handler![
+
+            // Audio sink callbacks
             playback::play_sound, 
             playback::pause_sound,
             playback::stop_sound,
             playback::add_to_queue, 
+            playback::load_file,
+
+            // file dialog callbacks
             filepicker::open_file_dialog,
+            filepicker::open_folder_dialog,
+
             ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
