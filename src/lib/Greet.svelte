@@ -22,16 +22,19 @@
     if (files !== null) {
       await invoke("add_to_queue", {files: files})
     }
+    else {
+      await invoke("add_to_queue", {})
+    }
   }
 
   let openDialog = false;
 
   async function openFolder() {
-    await invoke("open_file_dialog")
+    await invoke("open_file_dialog", false)
   }
 
   
-  type FilePayload = {files: string[] };
+  type FilePayload = { files: string[] };
 
   (async () => {
     await listen<FilePayload>('open-files', (event) => {

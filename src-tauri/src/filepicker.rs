@@ -1,31 +1,44 @@
-use std::{path::PathBuf};
+// Payloads stuff
+mod payload;
+use payload::OpenFileDialog;
 
+// Tauri stuff
 use tauri::{api::dialog::FileDialogBuilder, Window};
 
-
-#[derive(Clone, serde::Serialize)]
-pub struct Payload {
-    files: Vec<PathBuf>
+#[tauri::command]
+pub fn open_file_dialog(window: Window, is_dir: bool) {
+    if is_dir {
+        open_file_dialog_folders(window);
+    }
+    else {
+        open_file_dialog_files(window);
+    }
 }
 
-#[tauri::command]
-pub fn open_file_dialog(window: Window) {
-    
+fn open_file_dialog_folders(window: Window) {
     FileDialogBuilder::default()
-          //.add_filter("Markdown", &["md"])
-          .pick_files(move |path_buf| {
+        .add_filter("Audio Files", &["mp3", "wav", "ogg"])
+        .pick_folders(move |path_buf| {
 
-            let mut files: Vec<PathBuf> = vec![];
+            // Emit that folders have been picked to add to queue
+            if let Some(p) = path_buf {
+                window.emit("open-folders", OpenFileDialog{paths: p})
+                .expect("Error opening folders");
+            }
 
-            match path_buf {
-            Some(p) => { 
-                files = p;
-             }
-            _ => {  }
-          };
+        });
+}
 
-          window.emit("open-files", Payload{files})
-            .expect("Error opening files");
+fn open_file_dialog_files(window: Window) {
+    FileDialogBuilder::default()
+        .add_filter("Audio Files", &["mp3", "wav", "ogg"])
+        .pick_files(move |path_buf| {
+
+            // Emit that files have been picked and need to be added to queue
+            if let Some(p) = path_buf {
+                window.emit("open-files", OpenFileDialog{paths: p})
+                .expect("Error opening files");
+            }
 
         });
 }

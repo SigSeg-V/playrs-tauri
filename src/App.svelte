@@ -6,7 +6,7 @@
   <h1>Welcome to Tauri!</h1>
 
   <div class="row">
-    <Greet />
+    <Greet/>
   </div>
 
 </main>
