@@ -1,5 +1,6 @@
 use std::sync::Mutex;
 
+use gstreamer::ClockTime;
 use gstreamer_player as gst_player;
 use gst_player::{Player};
 use tauri::Window;
@@ -11,6 +12,29 @@ pub struct Sink {
     pub player: Player,
     pub playlist: Vec<String>,
     pub current_file: usize,
+}
+
+#[derive(Clone, serde::Serialize)]
+struct ClockTimePayload {
+    pub hours: u64,
+    pub mins: u64,
+    pub secs: u64,
+    pub msecs: u64,
+}
+
+trait Payload {
+    fn new_payload(&self) -> ClockTimePayload;
+}
+
+impl Payload for ClockTime {
+    fn new_payload(&self) -> ClockTimePayload {
+        ClockTimePayload {
+            hours: self.hours(),
+            mins: self.minutes(),
+            secs: self.seconds(),
+            msecs: self.mseconds(),
+        }
+    }
 }
 
 #[tauri::command]
@@ -41,6 +65,15 @@ pub fn add_to_queue(window: Window, state: tauri::State<PlayState>, files: Vec<S
 }
 
 #[tauri::command]
+pub fn pop_playlist(window: Window, state: tauri::State<PlayState>) {
+    let mut sink = state.sink.lock().unwrap();
+
+    sink.playlist.pop();
+    window.emit("update-playlist", sink.playlist.clone())
+        .expect("Error updating playlist");
+}
+
+#[tauri::command]
 pub fn load_file(state: tauri::State<PlayState>) {
     let sink = state.sink.lock().unwrap();
     sink.player.set_uri(Some(sink.playlist[sink.current_file].as_str()));
@@ -65,4 +98,14 @@ pub fn pause_sound(state: tauri::State<PlayState>) {
 pub fn stop_sound(state: tauri::State<PlayState>) {
     let sink = state.sink.lock().unwrap();
     sink.player.stop();
+}
+
+#[tauri::command]
+pub fn get_duration(window: Window, state: tauri::State<PlayState>) {
+    let sink = state.sink.lock().unwrap();
+
+    if let Some(dur) = sink.player.duration() {
+        window.emit("get-duration", dur.new_payload()).expect("Could not find duration")        
+    }
+
 }

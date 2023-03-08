@@ -35,16 +35,53 @@
     await invoke("open_folder_dialog")
   }
   
+  async function popPlayList() {
+    await invoke("pop_playlist")
+  }
+
+  async function getRuntime() {
+
+  }
+
   type FilePayload = { paths: string[] };
 
+  type ClockTimePayload = {
+    hours: number,
+    mins: number, 
+    secs: number,
+    msecs: number,
+  };
+
   // playlist as a string array do display to the gui
-  $: playList = [];
+  let playlist: string[];
+  $: playlist = [];
 
   // gets the new playlist from the backend on update
-  listen<Array<string>>("update-playlist", (event) => {
-    playList = event.payload;
+  async function getPlaylist() {
+    await listen<Array<string>>("update-playlist", (event) => {
+    playlist = event.payload;
     console.log(event.payload)
-  }).catch();
+  }).catch(() => {
+    console.log("Error occurred updating playlist");
+  });
+  }
+
+  let duration: ClockTimePayload;
+  $: duration;
+
+  async function getDuration() {
+    await listen<ClockTimePayload>("get-duration", (event) => {
+      duration = event.payload;
+      console.log(event.payload);
+    }).catch(() => {
+      console.log("Error occurred getting duration");
+    });
+  }
+
+
+
+  
+
 
   (async () => {
     await listen<FilePayload>('open-files', (event) => {
@@ -78,8 +115,28 @@
       Open Folder Dialog
     </button>
 
+    <button on:click={popPlayList}>
+      Pop Playlist
+    </button>
+
   </div>
-  {#each playList as rec}
-  <li> {rec} </li>
-  {/each}
+
+  {#await getDuration()}
+    <p>
+      Loading duration...
+    </p>
+  {:then _}
+    Duration of current file: {duration.hours}h, {duration.mins}m, {duration.secs}s, {duration.msecs}ms
+  {/await}
+
+  {#await getPlaylist()}
+    <p>
+      Playlist Empty
+    </p>
+  {:then _}
+    {#each playlist as rec}
+      <li> {rec.split("/").at(-1)} </li>
+    {/each}
+  {/await}
+
 </div>

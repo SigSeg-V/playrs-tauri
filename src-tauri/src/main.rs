@@ -43,6 +43,8 @@ fn main() -> Result<(), glib::Error> {
             playback::stop_sound,
             playback::add_to_queue, 
             playback::load_file,
+            playback::pop_playlist,
+            playback::get_duration,
 
             // file dialog callbacks
             filepicker::open_file_dialog,
