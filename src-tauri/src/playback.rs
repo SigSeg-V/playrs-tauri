@@ -105,7 +105,7 @@ pub fn get_duration(window: Window, state: tauri::State<PlayState>) {
     let sink = state.sink.lock().unwrap();
 
     if let Some(dur) = sink.player.duration() {
-        window.emit("get-duration", dur.new_payload()).expect("Could not find duration")        
+        window.emit("get-duration", dur.new_payload()).expect("Could not find duration");
     }
-
+    println!("{:?}", sink.player.duration());
 }

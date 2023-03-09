@@ -1,46 +1,50 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/tauri"
-  import { emit, listen } from '@tauri-apps/api/event'
+  import { listen } from '@tauri-apps/api/event'
 
   // Sends event to rodio to play current queue
   async function playSound() {
-    await invoke("play_sound")
+    const unlisten = await invoke("play_sound");
+    return unlisten;
   }
   
   // Sends event to rodio to pause current queue
   async function pauseSound() {
-    await invoke("pause_sound")
+    const unlisten = await invoke("pause_sound");
+    return unlisten;
   }
 
   // Sends event to rodio to pause current queue
   async function stopSound() {
-    await invoke("stop_sound")
+    const unlisten = await invoke("stop_sound");
+    return unlisten;
   }
 
   // Adds sound to rodio queue
   async function addToQueue(files: Array<string>) {
+    let unlisten;
     if (files !== null) {
-      await invoke("add_to_queue", {files: files})
+      unlisten = await invoke("add_to_queue", {files: files});
     }
     else {
-      await invoke("add_to_queue", {})
+      unlisten = await invoke("add_to_queue", {});
     }
+    return unlisten;
   }
 
   async function openFiles() {
-    await invoke("open_file_dialog")
+    const unlisten = await invoke("open_file_dialog");
+    return unlisten;
   }
 
   async function openFolders() {
-    await invoke("open_folder_dialog")
+    const unlisten = await invoke("open_folder_dialog");
+    return unlisten;
   }
   
   async function popPlayList() {
-    await invoke("pop_playlist")
-  }
-
-  async function getRuntime() {
-
+    const unlisten = await invoke("pop_playlist");
+    return unlisten;
   }
 
   type FilePayload = { paths: string[] };
@@ -58,37 +62,40 @@
 
   // gets the new playlist from the backend on update
   async function getPlaylist() {
-    await listen<Array<string>>("update-playlist", (event) => {
-    playlist = event.payload;
-    console.log(event.payload)
-  }).catch(() => {
-    console.log("Error occurred updating playlist");
-  });
+    const unlisten = await listen<Array<string>>("update-playlist", (event) => {
+      playlist = event.payload;
+      console.log(event.payload)
+    });
+    return unlisten;
   }
+
+  invoke("get_duration");
 
   let duration: ClockTimePayload;
-  $: duration;
+  $: duration = null;
 
   async function getDuration() {
-    await listen<ClockTimePayload>("get-duration", (event) => {
-      duration = event.payload;
+    console.log("duration button clicked");
+
+    const unlisten = await listen<ClockTimePayload>("get-duration", (event) => {
+      
+      // duration.hours = event.payload.hours;
+      // duration.mins = event.payload.mins;
+      // duration.secs = event.payload.secs;
+      // duration.msecs = event.payload.msecs;
+      console.log("inside await");
       console.log(event.payload);
-    }).catch(() => {
-      console.log("Error occurred getting duration");
     });
+    return unlisten;
   }
 
-
-
-  
-
-
   (async () => {
-    await listen<FilePayload>('open-files', (event) => {
+    const unlisten = await listen<FilePayload>('open-files', (event) => {
       console.log(event.payload);
       addToQueue(event.payload.paths);
-  })
-})();
+    });
+    return unlisten;
+  })();
 
 
 </script>
@@ -117,6 +124,10 @@
 
     <button on:click={popPlayList}>
       Pop Playlist
+    </button>
+
+    <button on:click={getDuration}>
+      Get Duration
     </button>
 
   </div>

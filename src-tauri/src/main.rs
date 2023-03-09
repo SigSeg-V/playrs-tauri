@@ -14,8 +14,12 @@ mod playback;
 
 use playback::PlayState;
 use playback::Sink;
+use tauri::App;
+use tauri::Manager;
 
 use std::sync::Mutex;
+use std::thread;
+use std::thread::sleep;
 
 fn main() -> Result<(), glib::Error> {
     // init audio streams
@@ -27,6 +31,21 @@ fn main() -> Result<(), glib::Error> {
     );
 
     tauri::Builder::default()
+        .setup(|app| {
+            // ...
+
+            let app_handle = app.handle();
+            tauri::async_runtime::spawn(async move {
+                // A loop that takes output from the async process and sends it
+                // to the webview via a Tauri Event
+                loop {
+                    sleep(std::time::Duration::from_millis(250));
+                    app_handle.emit_all("get_duration", "").unwrap();    
+                }
+            });
+
+            Ok(())
+        })
         .manage(
                 PlayState{
                     sink: Mutex::new(
