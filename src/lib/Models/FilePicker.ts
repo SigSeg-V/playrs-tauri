@@ -1,0 +1,1 @@
+export type Files = { paths: string[] };
