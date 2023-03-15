@@ -1,6 +1,6 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/tauri"
-  import { listen } from '@tauri-apps/api/event'
+  import { emit, listen } from '@tauri-apps/api/event'
 
   // Sends event to rodio to play current queue
   async function playSound() {
@@ -49,12 +49,38 @@
 
   type FilePayload = { paths: string[] };
 
-  type ClockTimePayload = {
+  type ClockTime = {
     hours: number,
     mins: number, 
     secs: number,
     msecs: number,
   };
+
+  function printClockTime(ct: ClockTime) {
+    let secs: number = ct.secs;
+    let mins: number = ct.secs / 60;
+    let hours: number = mins / 60;
+
+    secs %= 60;
+    mins %= 60;
+    
+    secs = Math.round(secs);
+    mins = Math.floor(mins);
+    hours = Math.floor(hours);
+
+    let time = [hours, mins, secs];
+    let timeArray: string[] = [];
+    let timeString = "";
+
+    time.forEach(denom => {
+      let formattedNum = denom.toLocaleString('en-US', {
+        minimumIntegerDigits: 2,
+        useGrouping: false
+      });
+      timeArray.push(formattedNum);
+    });
+    return timeString.concat(timeArray[0], ":", timeArray[1], ":", timeArray[2]);
+  }
 
   // playlist as a string array do display to the gui
   let playlist: string[];
@@ -69,25 +95,35 @@
     return unlisten;
   }
 
-  invoke("get_duration");
-
-  let duration: ClockTimePayload;
-  $: duration = null;
+  let duration: ClockTime;
+  $: duration = {hours: 0, mins: 0, secs: 0, msecs: 0};
 
   async function getDuration() {
     console.log("duration button clicked");
 
-    const unlisten = await listen<ClockTimePayload>("get-duration", (event) => {
+    const unlisten = await listen<ClockTime>("get-duration", (event) => {
       
-      // duration.hours = event.payload.hours;
-      // duration.mins = event.payload.mins;
-      // duration.secs = event.payload.secs;
-      // duration.msecs = event.payload.msecs;
-      console.log("inside await");
+      duration = event.payload;
+      console.log("inside await get-duration");
       console.log(event.payload);
     });
     return unlisten;
   }
+
+  let position: ClockTime;
+  $: position = {hours: 0, mins: 0, secs: 0, msecs: 0};
+
+  async function getPosition() {
+    console.log("position button clicked");
+
+    const unlisten = await listen<ClockTime>("get-position", (event) => {
+      
+      position = event.payload;
+      console.log("inside await get-position");
+      console.log(event.payload);
+    });
+    return unlisten;
+  } 
 
   (async () => {
     const unlisten = await listen<FilePayload>('open-files', (event) => {
@@ -96,7 +132,6 @@
     });
     return unlisten;
   })();
-
 
 </script>
 
@@ -137,8 +172,21 @@
       Loading duration...
     </p>
   {:then _}
-    Duration of current file: {duration.hours}h, {duration.mins}m, {duration.secs}s, {duration.msecs}ms
+    DURATION:
+    {printClockTime(duration)} / 
+    {duration.secs}
   {/await}
+  
+  {#await getPosition()}
+    <p>
+      Loading position...
+    </p>
+  {:then _}
+    POSITION:
+    {printClockTime(position)} / 
+    {position.secs}
+  {/await}
+    
 
   {#await getPlaylist()}
     <p>

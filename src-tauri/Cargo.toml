@@ -18,6 +18,7 @@ serde = { version = "1.0", features = ["derive"] }
 tauri = { version = "1.2", features = ["api-all", "dialog"] }
 gstreamer = { version = "0.20.2" }
 gstreamer-player = "0.20.0"
+tokio = { version = "1.26.0", features = ["time"] }
 
 [features]
 # by default Tauri runs in production mode

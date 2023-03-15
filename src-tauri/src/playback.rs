@@ -100,6 +100,7 @@ pub fn stop_sound(state: tauri::State<PlayState>) {
     sink.player.stop();
 }
 
+
 #[tauri::command]
 pub fn get_duration(window: Window, state: tauri::State<PlayState>) {
     let sink = state.sink.lock().unwrap();
@@ -107,5 +108,13 @@ pub fn get_duration(window: Window, state: tauri::State<PlayState>) {
     if let Some(dur) = sink.player.duration() {
         window.emit("get-duration", dur.new_payload()).expect("Could not find duration");
     }
-    println!("{:?}", sink.player.duration());
+}
+
+#[tauri::command]
+pub fn get_position(window: Window, state: tauri::State<PlayState>) {
+    let sink = state.sink.lock().unwrap();
+
+    if let Some(pos) = sink.player.position() {
+        window.emit("get-position", pos.new_payload()).expect("Could not find position");
+    }
 }
