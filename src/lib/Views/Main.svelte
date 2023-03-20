@@ -1,19 +1,29 @@
 <script lang="ts">
-  import { invoke } from "@tauri-apps/api/tauri"
-  import { emit, listen } from '@tauri-apps/api/event'
-  import { nullDuration, type ClockTime } from "../Models/Player";
+
   import { awaitFileDialog, openFiles, openFolders } from "../Controllers/FilePicker";
   import { getDuration, getPosition, pauseSound, playSound, printClockTime, stopSound } from "../Controllers/Player";
-  import { getPlaylist, popPlayList } from "../Controllers/Playlist";
+  import { getPlaylist, popPlaylist } from "../Controllers/Playlist";
+  import type { ClockTime } from "../Models/Player";
 
-  let playlist: string[];
-  $: playlist = [];
+  let plist: string[] = [];
+  $: playlist = plist;
+  async function updatePlaylist() {
+    plist = await getPlaylist();
+  }
 
   let duration: ClockTime;
-  $: duration = nullDuration;
+  $: duration;
+  async function updateDuration() {
+    console.log("in update duration " + duration.secs);
+    duration = await getDuration();
+    console.log("finished updating duration");
+  }
 
-  let position: ClockTime;
-  $: position = nullDuration;
+  // let pos: ClockTime;
+  // $: position = printClockTime(pos);
+  // async function updatePosition() {
+  //   pos = await getPosition();
+  // }
 
 </script>
 
@@ -26,6 +36,7 @@
 
 <div>
   <div class="row">
+    
     <button on:click={playSound}>
       Play
     </button>
@@ -33,10 +44,10 @@
     <button on:click={pauseSound}>
       Pause
     </button>
-
+ 
     <button on:click={stopSound}>
       Stop
-    </button>
+    </button> 
 
     <button on:click={openFiles}>
       Open File Dialog
@@ -46,41 +57,26 @@
       Open Folder Dialog
     </button>
 
-    <button on:click={popPlayList}>
+    <button on:click={popPlaylist}>
       Pop Playlist
-    </button>
+    </button> 
 
   </div>
-
-  {#await getDuration(duration)}
-    <p>
-      Loading duration...
-    </p>
+  
+  {#await updateDuration()}
+    no duration
   {:then _}
     DURATION:
     {printClockTime(duration)} / 
     {duration.secs}
-  {/await}
+  {/await} 
+
+  <!-- POSITION:
+  {position} / 
+  {pos.secs}
   
-  {#await getPosition(position)}
-    <p>
-      Loading position...
-    </p>
-  {:then _}
-    POSITION:
-    {printClockTime(position)} / 
-    {position.secs}
-  {/await}
-    
-
-  {#await getPlaylist(playlist)}
-    <p>
-      Playlist Empty
-    </p>
-  {:then _}
-    {#each playlist as rec}
-      <li> {rec.split("/").at(-1)} </li>
-    {/each}
-  {/await}
-
+  {#each playlist as rec}
+    <li> {rec.split("/").at(-1)} </li>
+  {/each} -->
+   
 </div>

@@ -23,7 +23,7 @@ export async function stopSound() {
 export function printClockTime(ct: ClockTime) {
 
   // pretty print 0 time
-  if (ct.secs === 0) {
+  if (ct.secs === 0 || ct.secs === null) {
     return "--:--:--"
   }
   //                     Hours           Minutes     Seconds
@@ -49,20 +49,24 @@ export function printClockTime(ct: ClockTime) {
   return time[0].concat(":", time[1], ":", time[2]);
 }
 
-export async function getDuration(duration: ClockTime) {
+export async function getDuration() {
   console.log("duration button clicked");
+
+  let duration: ClockTime;
 
   const unlisten = await listen<ClockTime>("get-duration", (event) => {
     
     duration = event.payload;
     console.log("inside await get-duration");
-    console.log(event.payload);
-    return duration;
+    console.log(event.payload);  
   });
   return duration;
 }
 
-export async function getPosition(position: ClockTime) {
+export async function getPosition() {
+
+  let position: ClockTime;
+  
   console.log("position button clicked");
 
   const unlisten = await listen<ClockTime>("get-position", (event) => {
@@ -71,5 +75,5 @@ export async function getPosition(position: ClockTime) {
     console.log("inside await get-position");
     console.log(event.payload);
   });
-  return unlisten;
+  return position;
 } 

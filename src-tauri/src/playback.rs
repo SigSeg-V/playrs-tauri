@@ -107,6 +107,7 @@ pub fn get_duration(window: Window, state: tauri::State<PlayState>) {
 
     if let Some(dur) = sink.player.duration() {
         window.emit("get-duration", dur.new_payload()).expect("Could not find duration");
+        println!("{dur}");
     }
 }
 
@@ -116,5 +117,6 @@ pub fn get_position(window: Window, state: tauri::State<PlayState>) {
 
     if let Some(pos) = sink.player.position() {
         window.emit("get-position", pos.new_payload()).expect("Could not find position");
+        println!("{pos}");
     }
 }

@@ -14,16 +14,17 @@ export async function addToQueue(files: string[]) {
   return unlisten;
 }
 
-export async function popPlayList() {
+export async function popPlaylist() {
     const unlisten = await invoke("pop_playlist");
     return unlisten;
 }
 
 // gets the new playlist from the backend on update
-export async function getPlaylist(playlist: string[]) {
+export async function getPlaylist() {
+  let playlist: string[] = [];
     const unlisten = await listen<Array<string>>("update-playlist", (event) => {
       playlist = event.payload;
-      console.log(event.payload)
+      console.log("new playlist " + event.payload)
     });
-    return unlisten;
+    return playlist;
 }
